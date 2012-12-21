@@ -7,5 +7,3 @@ mods.create(function(){
     }
   }
 });
-
-console.log(mods.modules);

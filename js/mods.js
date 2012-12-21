@@ -39,8 +39,9 @@
             modules:[],
             //configuration
             root:'',
-            forceAsync:false
-  }
+            baseTime:'seconds' // can change this to 'milliseconds'
+            
+  };
   
   context.mods.create = _create ;
   context.mods.require = _require ;
@@ -49,7 +50,7 @@
   context.mods.quest = _quest ;
   context.mods.caps = _caps ;
 //---------------------------------------------------------------------------
-  var stack , maxStack , handler ;
+  var stack , maxStack , handler , handlerContent , timeInit , timeLoad ;
 //---------------------------------------------------------------------------
   /** Create a module
    *  Array require : an Array that contains other dependencies *optional*
@@ -60,14 +61,24 @@
       module = require ;
       require = null ;
     }
-    this.modules.push(module);       
+    
+    this.modules.push(module);
+    
+    if(require != null){
+    	this.require(require);
+    }
+          
   }
   
+  function _hookModule(module){
+	  context.mods.module.push(module);
+  }
   /** Require modules
    *  Array libs : an Array that contains the modules to load
    *  Function callback : a function that fired when modules are completely load
    **/        
   function _require(libs,callback){
+	timeInit = (new Date()).getTime();
     maxStack = libs.length ;
     stack = 0 ;
     handler = callback ;
@@ -78,22 +89,34 @@
   
   function _update(){
     if(stack == maxStack){
-      var args = '' ;
+      var args = [] , vars = '' ;
+      if(context.mods.modules.length == 0)hanlder = _hookModule ;
+      
       for(var i = maxStack - 1 ; i >= 0 ; i--){
-        arguments[i] = context.mods.modules.pop()();
-        console.log(i,arguments[i]);
+        args[i] = context.mods.modules.pop()();
+        console.log(i,args[i]);
       }
-      var h = new Function('a,b,c','console.log(a,b,c);')
-      h(1,2,3);
-      handler(arguments);  
+      for(var i = 0 ; i < args.length ; i++){
+    	  vars += 'a['+i+'],' ;
+      }
+      
+      timeLoad = (new Date()).getTime();
+      var time = context.mods.baseTime == 'milliseconds' ? (timeLoad-timeInit) : (timeLoad-timeInit)/1000 ;
+      args.push( time + ' ' + context.mods.baseTime);
+      vars += 'a['+i+']' ;
+      
+      console.log(vars);
+      var h = new Function('a','return '+handler+'('+vars+')');
+      handlerContent = h(args);  
     }
   }
   
   function _req(lib){
+	console.log('require :',lib);
     var script = document.createElement('script');
     script.type = 'text/javascript' ;
     script.async = true ;
-    script.src = lib ;
+    script.src = context.mods.root + '/' + lib + '.js' ;
     script.onload = function(){
        stack++;
        _update();
@@ -121,7 +144,13 @@
    *  Allow to configure your own module
    *  Object obj : an Object that contains configuration    
    **/     
-  function _config(obj){}
+  function _config(obj){
+	  for(var option in obj){
+		  if(context.mods[option] != 'undefined'){
+			  context.mods[option] = obj[option] ;
+		  }
+	  }
+  }
   
   /** Quest
    * Solve a condiction and load A is true or B otherwise
