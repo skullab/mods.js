@@ -4,5 +4,5 @@ mods.create(function(){
 		getFoobar:function(){
 			return foobar ;
 		}
-	}
+	};
 });

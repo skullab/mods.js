@@ -5,5 +5,5 @@ mods.create(['test2'],function(test2){
     getFoo:function(){
       return foo ;
     }
-  }
+  };
 });

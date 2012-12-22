@@ -36,10 +36,10 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
             version:'0.0.1',
             revision:'20/12/12',
             //------------------
-            modules:[],
+            modules:[], // modules container
             //configuration
-            root:'',
-            baseTime:'seconds' // can change this to 'milliseconds'
+            root:'', // the root url to load files
+            baseTime:'seconds' // set this to 'milliseconds' to display milliseconds
             
   };
   
@@ -50,8 +50,20 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
   context.mods.quest = _quest ;
   context.mods.caps = _caps ;
 //---------------------------------------------------------------------------
+<<<<<<< HEAD
   var log , stack , maxStack , handler , handlerContent , timeInit , timeLoad ,
   _synchronized ;
+=======
+  var _sync = false ,  
+  stack , 
+  maxStack , 
+  _libs = [] ,
+  _requireCounter = 0 ,
+  handler , 
+  handlerContent , 
+  timeInit , 
+  timeLoad ;
+>>>>>>> 2.1
 //---------------------------------------------------------------------------
   log = function(){if(log.enable)console.log.apply(console,arguments);};
   log.enable = true ;
@@ -66,6 +78,7 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
       require = null ;
     }
     
+<<<<<<< HEAD
     log('create a module :',require,module);
     
     this.modules.push(module);
@@ -73,10 +86,27 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
     if(require != null){
       log('need sync');
     	//this.require(require,module,true);
+=======
+    if(module != null){
+    	this.modules.push(module);
+    }
+    
+    if(require != null){
+    	_sync = true ;
+    	this.require(require,module);
+>>>>>>> 2.1
     }
           
   }
   
+<<<<<<< HEAD
+=======
+  function _hookModule(module){
+	  console.log('hook',module);
+	  context.mods.module.push(module);
+  }
+  
+>>>>>>> 2.1
   /** Require modules
    *  Array libs : an Array that contains the modules to load
    *  Function callback : a function that fired when modules are completely load
@@ -86,15 +116,37 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
 	  timeInit = (new Date()).getTime();
     maxStack = libs.length ;
     stack = 0 ;
+    _requireCounter++ ;
+    _libs.push({req:libs,call:callback}) ;
     handler = callback ;
     _synchronized = sync ;
     for(var i in libs){
+<<<<<<< HEAD
        setTimeout(_req(libs[i],sync),0);
     }
   }
   
   function _update(){
     log('update');
+=======
+    	_req(libs[i]);
+	}
+  }
+  
+  function _asyncOnLoad(){
+	  stack++;
+	  if(stack == maxStack)console.log(_libs.pop());
+	  _update();
+  }
+  
+  function _syncOnLoad(){
+	  console.log('sync');
+	  if(stack == maxStack)console.log(_libs.pop());
+  }
+  
+  function _update(){
+	console.log('update',stack,maxStack);
+>>>>>>> 2.1
     if(stack == maxStack){
       log('fire callback');
       var args = [] , vars = '' ;
@@ -113,6 +165,10 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
       args.push( time + ' ' + context.mods.baseTime);
       vars += 'a['+i+']' ;
       
+<<<<<<< HEAD
+=======
+      console.log('vars',vars);
+>>>>>>> 2.1
       var h = new Function('a','return '+handler+'('+vars+')');
       handlerContent = h(args);
       log('end callback');  
@@ -125,6 +181,7 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
     script.type = 'text/javascript' ;
     script.async = true ;
     script.src = context.mods.root + '/' + lib + '.js' ;
+<<<<<<< HEAD
     script.onload = function(){
       stack++;
       log('script '+script.src+' onload',stack,maxStack);
@@ -134,6 +191,10 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
        
       _update();
     }
+=======
+    script.onload = _sync ? _syncOnLoad : _asyncOnLoad ;
+    //script.onload = _syncOnLoad ;
+>>>>>>> 2.1
     document.head.appendChild(script);
   }
   /** Import files
@@ -144,7 +205,7 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
     var xml = new XMLHttpRequest();
     for(var i in files){
       var file = files[i] + '.js' ;
-      xml.open('GET',file,false);
+      xml.open('GET',this.root + '/' + file,false);
       xml.send('');
       var response = xml.response ;
       var script = document.createElement('script');
