@@ -1,6 +1,5 @@
-mods.create(['test'],function(test){
-	console.log(test);
-	var foobar = test.getFoo() + 'bar' ; 
+mods.create(function(){
+  var foobar = 'foobar' ;
 	return {
 		getFoobar:function(){
 			return foobar ;

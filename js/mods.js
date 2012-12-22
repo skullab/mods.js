@@ -28,7 +28,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
  
- if(typeof context === 'undefined')context = this.window || this ;
+if(typeof mods_context === 'undefined')mods_context = this.window || this ;
  
 (function(context){
   
@@ -50,8 +50,12 @@
   context.mods.quest = _quest ;
   context.mods.caps = _caps ;
 //---------------------------------------------------------------------------
-  var stack , maxStack , handler , handlerContent , timeInit , timeLoad ;
+  var log , stack , maxStack , handler , handlerContent , timeInit , timeLoad ,
+  _synchronized ;
 //---------------------------------------------------------------------------
+  log = function(){if(log.enable)console.log.apply(console,arguments);};
+  log.enable = true ;
+//---------------------------------------------------------------------------  
   /** Create a module
    *  Array require : an Array that contains other dependencies *optional*
    *  Function module : the definition of module
@@ -62,40 +66,44 @@
       require = null ;
     }
     
+    log('create a module :',require,module);
+    
     this.modules.push(module);
     
     if(require != null){
-    	this.require(require);
+      log('need sync');
+    	//this.require(require,module,true);
     }
           
   }
   
-  function _hookModule(module){
-	  context.mods.module.push(module);
-  }
   /** Require modules
    *  Array libs : an Array that contains the modules to load
    *  Function callback : a function that fired when modules are completely load
    **/        
-  function _require(libs,callback){
-	timeInit = (new Date()).getTime();
+  function _require(libs,callback,sync){
+    sync = sync || false ;
+	  timeInit = (new Date()).getTime();
     maxStack = libs.length ;
     stack = 0 ;
     handler = callback ;
+    _synchronized = sync ;
     for(var i in libs){
-       _req(libs[i]);
+       setTimeout(_req(libs[i],sync),0);
     }
   }
   
   function _update(){
+    log('update');
     if(stack == maxStack){
+      log('fire callback');
       var args = [] , vars = '' ;
-      if(context.mods.modules.length == 0)hanlder = _hookModule ;
       
       for(var i = maxStack - 1 ; i >= 0 ; i--){
         args[i] = context.mods.modules.pop()();
-        console.log(i,args[i]);
+        log('pop module',args[i]);
       }
+      
       for(var i = 0 ; i < args.length ; i++){
     	  vars += 'a['+i+'],' ;
       }
@@ -105,21 +113,26 @@
       args.push( time + ' ' + context.mods.baseTime);
       vars += 'a['+i+']' ;
       
-      console.log(vars);
       var h = new Function('a','return '+handler+'('+vars+')');
-      handlerContent = h(args);  
+      handlerContent = h(args);
+      log('end callback');  
     }
   }
   
-  function _req(lib){
-	console.log('require :',lib);
+  function _req(lib,sync){
+	  console.log('require :',lib);
     var script = document.createElement('script');
     script.type = 'text/javascript' ;
     script.async = true ;
     script.src = context.mods.root + '/' + lib + '.js' ;
     script.onload = function(){
-       stack++;
-       _update();
+      stack++;
+      log('script '+script.src+' onload',stack,maxStack);
+      if(_synchronized){
+        
+      }
+       
+      _update();
     }
     document.head.appendChild(script);
   }
@@ -161,4 +174,4 @@
   
   function _caps(){};
   
-})(context);
+})(mods_context);
