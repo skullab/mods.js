@@ -1,8 +1,4 @@
+mods.require(['test5']);
 mods.create(function(){
-  var foobar = 'foobar' ;
-	return {
-		getFoobar:function(){
-			return foobar ;
-		}
-	};
+  var test2 ;
 });
