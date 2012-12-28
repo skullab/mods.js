@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 mods.js
+ * Copyright (c) 2012-2013 mods.js
  * http://skullab.com author : [ivan.maruca[at]gmail.com]
  * 
  * mods.js is under MIT LICENSE                      
