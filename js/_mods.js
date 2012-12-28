@@ -14,8 +14,10 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
 //--------------------------------------------------------------------------- 
   var modules = [] ,
       pendingPack = [] , 
+      pendingOnLoad = [],
       counterRequire = 0 ,
       counterModule = 0 ,
+      handlerContent = [] ,
       timeInit , timeLoad ;
   
   function _require(libs,callback){
@@ -54,31 +56,34 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
     for(var i in pack.libs){
       var script = document.createElement('script');
       script.src = context.mods.root + '/' + pack.libs[i] + '.js' ;
-      var oneShot = true ;
+      pack.counter++
       script.onload = function(){
         log(script.src,'is loaded',pack.counter);
-        if(oneShot)pack.counter++;
-        var check = _update(group);
+        var check = _update(group,arguments.callee);
         if(!check){
           log(pack,'is pending...');
-          oneShot = false ;
-          setTimeout(arguments.callee,1000);
         }
       }
       document.head.appendChild(script);
     }
   }
   
-  function _update(group){
+  function _update(group,caller){
     log(group,counterRequire-1);
-    if(group != counterRequire-1)return false ;
     var pack = pendingPack[group] ;
+    if(group != counterRequire-1){
+    	pendingOnLoad[group] = caller ;
+    	return false ;
+    }
     if(pack.counter == pack.maxStack){
-      log('fire callback of',pack,group);
+      log('fire callback ->',pack.callback,group,modules);
       var args = [] , vars = '' ;
       
       for(var i = pack.maxStack - 1 ; i >= 0 ; i--){
-        args[i] = modules[group]();
+        try{args[i] = modules.pop()();}catch(e){
+        	log('ERROR',handlerContent,e);
+        	args[i] = handlerContent.pop();
+        }
         log('pop module',args[i]);
       }
       
@@ -92,9 +97,16 @@ if(typeof mods_context === 'undefined')mods_context = this.window || this ;
       vars += 'a['+i+']' ;
       
       var h = new Function('a','return '+pack.callback+'('+vars+')');
-      handlerContent = h(args);
-      log('end callback');
+      log(args,h);
+      handlerContent.push((h(args)));
+      log('end callback',handlerContent);
       counterRequire--;
+      if(pendingOnLoad.length > 0){
+    	  log('fire pending onload');
+    	  var fn = pendingOnLoad.pop() ;
+    	  log(fn);
+    	  fn();
+      }
       return true ;  
     }
     return false;
