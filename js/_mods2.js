@@ -41,15 +41,17 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 (function(context) {
 // -------------------------ONLY FOR DEBUG------------------------------------
 	var log = function() {
-		if(log.enable){
-			var l = Function.prototype.bind.call(console.log, console);
-			l.apply(console, arguments);
-		}
-		/*if (log.enable && console.log.apply){
-			console.log.apply(console, arguments);
-		}else{
-			console.log(arguments);
-		}*/
+    if(log.enable){
+      if(typeof console != 'undefined' && console.log.apply){
+        console.log.apply(console,arguments);
+      }else if(typeof console != 'undefined'){
+        var l = Function.prototype.bind.call(console.log, console);
+			  l.apply(console, arguments);
+      }else{
+        for(var i = 0 ; i < arguments.length ; i++)
+          document.write(arguments[i]+'<br>');
+      }
+    }
 	};
 	log.enable = true;
 // -------------------------PUBBLIC ACCESS------------------------------------
@@ -61,7 +63,12 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 	context.mods.require = _require;
 	context.mods.config = _config ;
 // ---------------------------------------------------------------------------
-	var modules = [], requireCounter = 0, currentPosition, limbo = [], pendingPack = [];
+	var modules = [] , 
+      requireCounter = 0 ,
+      updateCounter = 0 , 
+      currentPosition , 
+      limbo = [] , 
+      pendingPack = [] ;
 	
 	/** Configuration
 	 *  Allow to configure your own module
@@ -95,7 +102,7 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 		}
 		limbo[requireCounter].push(module);
 	}
-	// According to package the modules / libraries
+	// Package the modules / libraries
 	function _pack(libs, callback, requireCounter) {
 		return {
 			libs : libs,
@@ -107,20 +114,32 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 	// Create <script> and append it to HEAD !
 	function _append(pack) {
 		var max = pack.libs.length;
+    var head = document.getElementsByTagName('head')[0] ;
 		for ( var i in pack.libs) {
 			var script = document.createElement('script');
 			script.src = context.mods.root + '/' + pack.libs[i] + '.js';
 			script.position = i;
 			log('append', script.src);
+      
+      /*if(script.attachEvent)
+      script.attachEvent('onload',new function(){
+        pack.counter++;
+				var position = script.position;
+				log(script, 'is loaded', 'position:',
+						position, pack.counter, max);
+				_update(pack, position);
+      });*/
+      
 			script.onload = function(e) {
 				pack.counter++;
 				var element = e.target || e.srcElement ;
 				var position = element.position;
 				log(element, 'is loaded', 'position:',
-						element.position, pack.counter, max);
+						position, pack.counter, max);
 				_update(pack, position);
 			}
-			document.head.appendChild(script);
+      
+			head.appendChild(script);
 		}
 	}
 	// Main function callback for on load script
@@ -131,12 +150,13 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 		modules[pack.id][position] = limbo.pop();
 
 		if (pack.counter == pack.libs.length) {
-			log('all libs are loaded', pack.libs, 'ID :', pack.id);
-
+			log('all libs are loaded', pack.libs, 'ID :', pack.id,'requires :',requireCounter);
+      updateCounter++;
+      
 			pendingPack.push(pack);
-			log(pendingPack);
+			log('UP COUNTER:',updateCounter,pendingPack);
 
-			if (pack.id == requireCounter - 1) {
+			if (updateCounter == requireCounter) {
 				_execPending();
 			}
 		}
@@ -145,6 +165,7 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 	function _execPending() {
 		log('call pending...');
 		if (pendingPack.length > 0) {
+      pendingPack = _ord(pendingPack);
 			for ( var p = pendingPack.length - 1; p >= 0; p--) {
 				var pack = pendingPack[p];
 				log('for pack:', pack);
@@ -171,5 +192,15 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 			}
 		}
 	}
+  // Reorders the pendingPack
+  function _ord(o){
+    var r = new Array(o.length);
+    for(var i = 0 ; i < o.length ; i++){
+      log('ord:',o[i].id);
+      r[o[i].id] = o[i] ;
+    }
+    log('before ord:',o,'ord result:',r);
+    return r ;
+  }
 
 })(mods_context);
