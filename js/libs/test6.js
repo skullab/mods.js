@@ -1,6 +1,6 @@
 mods.create(function(){
-  var test6 ;
+	return 'I\'m test 6.1' ;
 });
 mods.create(function(){
-  var test6_2 ;
+	return 'I\'m test 6.2' ;
 });

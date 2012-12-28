@@ -1,3 +1,3 @@
 mods.create(function(){
-  var test5 ;
+	return 'I\'m test 5' ;
 });
