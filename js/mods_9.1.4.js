@@ -53,9 +53,11 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
       }
     }
 	};
+//*****CHANGE THIS TO FALSE BEFORE RELEASE*****
 	log.enable = true;
 // -------------------------PUBBLIC ACCESS------------------------------------
 	context.mods = {
+    version: '9.1.4',
 		root : '', 
 		baseTime : 'seconds'
 	};
@@ -68,7 +70,10 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
       updateCounter = 0 , 
       currentPosition , 
       limbo = [] , 
-      pendingPack = [] ;
+      pendingPack = [] ,
+      timeStart ,
+      timeEnd ,
+      timeDivider = 1000 ;  // for baseTime : default 'seconds'
 	
 	/** Configuration
 	 *  Allow to configure your own module
@@ -80,12 +85,14 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 			  context.mods[option] = obj[option] ;
 		  }
 	  }
+    timeDivider = context.mods.baseTime == 'milliseconds' ? 1 : 1000 ;
 	}
 	/** Require modules
 	 *  Array libs : an Array that contains the modules to load
 	 *  Function callback : a function that fired when modules are completely load
 	 **/        
 	function _require(libs, callback) {
+    timeStart = (new Date()).getTime() ;
 		log('require module', libs);
 		modules[requireCounter] = new Array(libs.length);
 		_append(_pack(libs, callback, requireCounter));
@@ -178,14 +185,21 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 						args.push(module[m]());
 					}
 				}
+
 				for(var i = 0 ; i < args.length ; i++){
-					vars += 'a['+i+']' ;
+					vars += 'a['+i+'],' ;
 				}
-				vars = vars.replace(/]a/g,'],a');
+        
+        
+				//vars = vars.replace(/]a/g,'],a');
+        vars += 'a['+i+']' ; // add time here !
 				log(args,vars);
 				
+  
 				if(pack.callback != undefined){
 					var h = new Function('a','return '+pack.callback+'('+vars+')');
+          timeEnd = ((new Date()).getTime() - timeStart)/timeDivider ;
+          args.push(timeEnd);
 					h(args);
 				}
 				
