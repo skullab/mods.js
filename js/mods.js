@@ -9,7 +9,7 @@
  * | | | | | | (_) | (_| \__ \_ | \__ \
  * |_| |_| |_|\___/ \__,_|___(_)/ |___/
  *                           |__/     
- * T Y N Y  M O D U L A R  L I B R A R Y                           
+ * T I N Y  M O D U L A R  L O A D E R                           
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
