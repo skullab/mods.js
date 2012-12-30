@@ -42,15 +42,16 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 // -------------------------ONLY FOR DEBUG------------------------------------
 	var log = function() {
     if(log.enable){
+    	 //console.log.apply(console,arguments);
       if(typeof console != 'undefined' && console.log.apply){
         console.log.apply(console,arguments);
       }else if(typeof console != 'undefined'){
         var l = Function.prototype.bind.call(console.log, console);
 			  l.apply(console, arguments);
-      }else{
+      }/*else{
         for(var i = 0 ; i < arguments.length ; i++)
           document.write(arguments[i]+'<br>');
-      }
+      }*/
     }
 	};
 //*****CHANGE THIS TO FALSE BEFORE RELEASE*****
