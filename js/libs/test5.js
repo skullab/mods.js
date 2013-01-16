@@ -1,3 +1,1 @@
-mods.create(function(){
-	return 'I\'m test 5' ;
-});
+console.log('test5.js append');

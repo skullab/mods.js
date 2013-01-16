@@ -1,6 +1,1 @@
-mods.create(function(){
-	return 'I\'m test 6.1' ;
-});
-mods.create(function(){
-	return 'I\'m test 6.2' ;
-});
+console.log('test6.js append');

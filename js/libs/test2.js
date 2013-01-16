@@ -1,10 +1,13 @@
-var pack2 ;
-
-mods.require(['test5'],function(test5){
-	console.log(test5);
-	pack2 = test5 ;
-});
-
+console.log('test2.js append');
 mods.create(function(){
-	return pack2 ;
+  return {
+    foo:'ooooooooooooook'
+  } ;
+})
+mods.require(['test5'],function(test5){
+	console.log('callback: test5 loaded');
 });
+
+/*mods.create(function(){
+	return pack2 ;
+});    */

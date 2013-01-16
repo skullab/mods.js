@@ -1,3 +1,4 @@
 mods.create(function(){
-  return 'I\'m test' ;
+  var a = 'module of test.js';
+  return a ;
 });
