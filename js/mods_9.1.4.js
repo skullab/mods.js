@@ -39,6 +39,7 @@
 if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 
 (function(context) {
+<<<<<<< HEAD
 // -------------------------ONLY FOR DEBUG------------------------------------
 	var log = function() {
     if(log.enable){
@@ -56,15 +57,24 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 	};
 //*****CHANGE THIS TO FALSE BEFORE RELEASE*****
 	log.enable = true;
+=======
+>>>>>>> fixing IE...
 // -------------------------PUBBLIC ACCESS------------------------------------
 	context.mods = {
-    version: '9.1.4',
+    version: '9.2.1',
 		root : '', 
 		baseTime : 'seconds'
 	};
 	context.mods.create = _create;
 	context.mods.require = _require;
 	context.mods.config = _config ;
+  
+  context.mods.getLoadedTime = function(a){
+    return a[a.length-1] ;
+  };
+  
+  context.mods.SECONDS = 'seconds' ;
+  context.mods.MILLISECONDS = 'milliseconds' ;
 // ---------------------------------------------------------------------------
 	var modules = [] , 
       requireCounter = 0 ,
@@ -94,7 +104,7 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 	 **/        
 	function _require(libs, callback) {
     timeStart = (new Date()).getTime() ;
-		log('require module', libs);
+		console.log('require module', libs);
 		modules[requireCounter] = new Array(libs.length);
 		_append(_pack(libs, callback, requireCounter));
 		requireCounter++;
@@ -104,7 +114,7 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 	 *  Function module : the definition of module
 	 **/   
 	function _create(module) {
-		log('create module', module, 'in position:', currentPosition);
+		console.log('create module', module, 'in position:', currentPosition);
 		if (limbo[requireCounter] == undefined) {
 			limbo[requireCounter] = [];
 		}
@@ -127,24 +137,25 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 			var script = document.createElement('script');
 			script.src = context.mods.root + '/' + pack.libs[i] + '.js';
 			script.position = i;
-			log('append', script.src);
+			console.log('append', script.src);
       
       /*if(script.attachEvent)
       script.attachEvent('onload',new function(){
         pack.counter++;
 				var position = script.position;
-				log(script, 'is loaded', 'position:',
+				console.log(script, 'is loaded', 'position:',
 						position, pack.counter, max);
 				_update(pack, position);
       });*/
       
-			script.onload = function(e) {
-				pack.counter++;
-				var element = e.target || e.srcElement ;
-				var position = element.position;
-				log(element, 'is loaded', 'position:',
-						position, pack.counter, max);
-				_update(pack, position);
+			script.onload = script.onreadystatechange = function(){
+        if(!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete'){
+				  pack.counter++;
+			    var position = this.position;
+          console.log('--------------------------> '+position);
+				  console.log(this, 'is loaded', 'position:',position, pack.counter, max);
+				  _update(pack, position);
+        }
 			}
       
 			head.appendChild(script);
@@ -153,16 +164,16 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 	// Main function callback for on load script
 	function _update(pack, position) {
 		currentPosition = position;
-		log('module in position', position, 'is loaded', '->',
+		console.log('module in position', position, 'is loaded', '->',
 				pack.libs[position]);
 		modules[pack.id][position] = limbo.pop();
 
 		if (pack.counter == pack.libs.length) {
-			log('all libs are loaded', pack.libs, 'ID :', pack.id,'requires :',requireCounter);
+			console.log('all libs are loaded', pack.libs, 'ID :', pack.id,'requires :',requireCounter);
       updateCounter++;
       
 			pendingPack.push(pack);
-			log('UP COUNTER:',updateCounter,pendingPack);
+			console.log('UP COUNTER:',updateCounter,pendingPack);
 
 			if (updateCounter == requireCounter) {
 				_execPending();
@@ -171,18 +182,18 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
 	}
 	// Executes the callback functions in succession
 	function _execPending() {
-		log('call pending...');
+		console.log('call pending...');
 		if (pendingPack.length > 0) {
       pendingPack = _ord(pendingPack);
 			for ( var p = pendingPack.length - 1; p >= 0; p--) {
 				var pack = pendingPack[p];
-				log('for pack:', pack);
+				console.log('for pack:', pack);
 				var args = [], vars = '';
 				
 				for ( var i = 0; i < pack.libs.length; i++) {
 					var module = modules[pack.id][i];
 					for ( var m in module) {
-						log('---->', module[m]);
+						console.log('---->', module[m]);
 						args.push(module[m]());
 					}
 				}
@@ -194,7 +205,7 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
         
 				//vars = vars.replace(/]a/g,'],a');
         vars += 'a['+i+']' ; // add time here !
-				log(args,vars);
+				console.log(args,vars);
 				
   
 				if(pack.callback != undefined){
@@ -211,10 +222,10 @@ if (typeof mods_context === 'undefined'){ mods_context = this.window || this ; }
   function _ord(o){
     var r = new Array(o.length);
     for(var i = 0 ; i < o.length ; i++){
-      log('ord:',o[i].id);
+      console.log('ord:',o[i].id);
       r[o[i].id] = o[i] ;
     }
-    log('before ord:',o,'ord result:',r);
+    console.log('before ord:',o,'ord result:',r);
     return r ;
   }
 
