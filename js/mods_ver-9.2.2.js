@@ -80,7 +80,7 @@ if (typeof MODS_CONTEXT === 'undefined'){ MODS_CONTEXT = this.window || this ; }
  *| NOTE : The name of this file                                             |
  *+--------------------------------------------------------------------------+ 
  */
-  var MODS_FILENAME = 'mods_ver-9.2.1'
+  var MODS_FILENAME = 'mods_ver-9.2.2'
 /*+--------------------------------------------------------------------------+
  *| MODS : VERSIONING                                                        |
  *+--------------------------------------------------------------------------+
@@ -89,11 +89,11 @@ if (typeof MODS_CONTEXT === 'undefined'){ MODS_CONTEXT = this.window || this ; }
  */
   var VER_MAJOR = 9 ;
   var VER_MINOR = 2 ;
-  var VER_REVISION = 1 ;
+  var VER_REVISION = 2 ;
 /*+--------------------------------------------------------------------------+
  *| MODS : ACCESIBILITY                                                      |
  *+--------------------------------------------------------------------------+
- *| NOTE : Accessibility by config function                                  |
+ *| NOTE : Accessibility from config function                                  |
  *+--------------------------------------------------------------------------+
  */
   var MODS_CONFIG_ACCESS = {root:0,baseTime:1} ;
@@ -173,9 +173,9 @@ if (typeof MODS_CONTEXT === 'undefined'){ MODS_CONTEXT = this.window || this ; }
     
     if(callback == context.mods.SYNC){
       _appendSync(_pack(libs,null,requireCounter))
-    }else{
+    }else if(typeof callback == 'function'){
 		  _append(_pack(libs, callback, requireCounter));
-    }
+    }else throw new Error('MODS.JS : Error require ! No callback function associated')
     
 		requireCounter++;
 	}
@@ -209,10 +209,10 @@ if (typeof MODS_CONTEXT === 'undefined'){ MODS_CONTEXT = this.window || this ; }
 			var script = document.createElement('script');
 			script.src = context.mods.root + '/' + pack.libs[i] + '.js';
 			script.position = i;
-			log.d('append', script.src);   
+			log.d('append', script.src);  
+       
 			script.onload = script.onreadystatechange = function(){
         if(!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete'){
-				  pack.counter++;
 			    var position = this.position;
           log.d('--------------------------> '+position);
 				  log.d(this, 'is loaded', 'position:',position, pack.counter, max);
@@ -230,6 +230,7 @@ if (typeof MODS_CONTEXT === 'undefined'){ MODS_CONTEXT = this.window || this ; }
   function _appendSync(pack){
     var head = document.getElementsByTagName('head')[0] ;
     var xml = new XMLHttpRequest();
+    
     for ( var i in pack.libs) {
       var script = document.createElement('script');
       script.type = 'text/javascript';
@@ -238,13 +239,17 @@ if (typeof MODS_CONTEXT === 'undefined'){ MODS_CONTEXT = this.window || this ; }
       xml.open('GET',src,false);
       xml.send('');
 
-      script.text = xml.response ;
+      script.text = xml.responseText ;
       head.appendChild(script);
+      _update(pack,i);
     }
   }
    
 	// Main function callback for on load script
 	function _update(pack, position) {
+    
+    pack.counter++ ;
+    
 		currentPosition = position;
 		log.d('module in position', position, 'is loaded', '->',
 				pack.libs[position]);

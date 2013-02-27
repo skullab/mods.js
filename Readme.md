@@ -2,7 +2,13 @@
 
 ## A TINY MODULAR LOADER
 
-ADVISE : The actual version (9.1.4) is not compatible with IE
+The actual version (9.2.2) is compatible with :
+
+* IE7
+* Firefox
+* Chrome
+* Opera
+* Safari
 
 Mods.js is a javascript library for managing Module Pattern
 
